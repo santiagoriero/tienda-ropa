@@ -7,10 +7,10 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300,400,600,800,900&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <script>
         tailwind.config = {
             theme: {
@@ -36,10 +36,11 @@
             color: #0a0a0a;
             -webkit-font-smoothing: antialiased;
         }
+
         /* Utilidades para ocultar barra de scroll */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
+
         /* Imagen de Hero urbana */
         .hero-bg {
             background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), url('https://images.unsplash.com/photo-1511511450040-677116ff389e?q=80&w=2073&auto=format&fit=crop');
@@ -47,6 +48,7 @@
             background-position: center;
         }
 
+        /* Marquee */
         .marquee {
             white-space: nowrap;
             overflow: hidden;
@@ -60,6 +62,18 @@
         @keyframes marquee {
             0%   { transform: translate(0, 0); }
             100% { transform: translate(-100%, 0); }
+        }
+
+        /* Animación fadeIn para verificación de CP */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Transición suave para el buscador expandible */
+        .search-expandable {
+            transition: width 0.3s ease, opacity 0.3s ease;
+            overflow: hidden;
         }
     </style>
 </head>
@@ -91,20 +105,34 @@
 
                 <!-- Desktop Navigation -->
                 <nav class="hidden md:flex space-x-10">
-                    <a href="#" class="text-sm font-bold text-gray-500 hover:text-black transition uppercase tracking-wide">Drop Nuevo</a>
-                    <a href="#" class="text-sm font-bold text-gray-900 hover:text-black transition uppercase tracking-wide">Superior</a>
-                    <a href="#" class="text-sm font-bold text-gray-900 hover:text-black transition uppercase tracking-wide">Inferior</a>
-                    <a href="#" class="text-sm font-bold text-red-600 hover:text-red-800 transition uppercase tracking-wide">Sale</a>
+                    <a href="#productos" onclick="setFiltroCategoria('nuevo')" class="text-sm font-bold text-gray-500 hover:text-black transition uppercase tracking-wide">Drop Nuevo</a>
+                    <a href="#productos" onclick="setFiltroCategoria('superior')" class="text-sm font-bold text-gray-900 hover:text-black transition uppercase tracking-wide">Superior</a>
+                    <a href="#productos" onclick="setFiltroCategoria('inferior')" class="text-sm font-bold text-gray-900 hover:text-black transition uppercase tracking-wide">Inferior</a>
+                    <a href="#productos" onclick="setFiltroCategoria('sale')" class="text-sm font-bold text-red-600 hover:text-red-800 transition uppercase tracking-wide">Sale</a>
                 </nav>
 
                 <!-- Icons (Search, Cart) -->
-                <div class="flex items-center space-x-6 flex-shrink-0">
-                    <button class="text-brand-dark hover:text-black transition">
-                        <i class="fa-solid fa-magnifying-glass text-xl"></i>
-                    </button>
-                    <button class="text-brand-dark hover:text-black transition relative">
+                <div class="flex items-center space-x-4 flex-shrink-0">
+                    <!-- Búsqueda expandible -->
+                    <div class="flex items-center">
+                        <div id="search-container" class="search-expandable w-0 opacity-0 flex items-center">
+                            <input
+                                type="text"
+                                id="search-input"
+                                placeholder="Buscar prendas..."
+                                class="w-40 md:w-56 px-3 py-1.5 text-sm border border-gray-300 rounded-l-md focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition"
+                            >
+                            <button onclick="limpiarFiltros()" class="px-2 py-1.5 text-xs text-gray-500 hover:text-black border border-l-0 border-gray-300 rounded-r-md bg-gray-50 transition">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <button onclick="toggleSearch()" class="text-brand-dark hover:text-black transition ml-2">
+                            <i class="fa-solid fa-magnifying-glass text-xl"></i>
+                        </button>
+                    </div>
+                    <button class="text-brand-dark hover:text-black transition relative" onclick="abrirCarrito()">
                         <i class="fa-solid fa-cart-shopping text-xl"></i>
-                        <span class="absolute -top-1.5 -right-2 bg-brand-black text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">2</span>
+                        <span id="cart-count" class="absolute -top-1.5 -right-2 bg-brand-black text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
                     </button>
                 </div>
             </div>
@@ -113,17 +141,17 @@
         <!-- Mobile Menu (Hidden by default) -->
         <div id="mobile-menu" class="hidden md:hidden bg-brand-light border-t border-gray-200 absolute w-full shadow-xl">
             <div class="px-4 py-4 space-y-2">
-                <a href="#" class="block px-3 py-3 rounded-md text-sm font-bold text-black uppercase tracking-wider hover:bg-white">🔥 Drop Nuevo</a>
-                <a href="#" class="block px-3 py-3 rounded-md text-sm font-bold text-gray-600 uppercase tracking-wider hover:bg-white">Prendas Superiores</a>
-                <a href="#" class="block px-3 py-3 rounded-md text-sm font-bold text-gray-600 uppercase tracking-wider hover:bg-white">Prendas Inferiores</a>
-                <a href="#" class="block px-3 py-3 rounded-md text-sm font-bold text-red-600 uppercase tracking-wider hover:bg-white">Sale / Ofertas</a>
+                <a href="#productos" onclick="setFiltroCategoria('nuevo'); toggleMenu();" class="block px-3 py-3 rounded-md text-sm font-bold text-black uppercase tracking-wider hover:bg-white">🔥 Drop Nuevo</a>
+                <a href="#productos" onclick="setFiltroCategoria('superior'); toggleMenu();" class="block px-3 py-3 rounded-md text-sm font-bold text-gray-600 uppercase tracking-wider hover:bg-white">Prendas Superiores</a>
+                <a href="#productos" onclick="setFiltroCategoria('inferior'); toggleMenu();" class="block px-3 py-3 rounded-md text-sm font-bold text-gray-600 uppercase tracking-wider hover:bg-white">Prendas Inferiores</a>
+                <a href="#productos" onclick="setFiltroCategoria('sale'); toggleMenu();" class="block px-3 py-3 rounded-md text-sm font-bold text-red-600 uppercase tracking-wider hover:bg-white">Sale / Ofertas</a>
             </div>
         </div>
     </header>
 
     <!-- Hero Section -->
     <section class="hero-bg h-[65vh] md:h-[85vh] flex items-center justify-center relative">
-        <div class="absolute inset-0 bg-black/20"></div> <!-- Overlay sutil -->
+        <div class="absolute inset-0 bg-black/20"></div>
         <div class="text-center px-4 relative z-10 flex flex-col items-center">
             <div class="bg-white text-black px-4 py-1 mb-6 font-bold text-xs tracking-[0.3em] uppercase">Streetwear Essentials</div>
             <h1 class="text-5xl md:text-7xl font-black text-white mb-6 drop-shadow-lg uppercase tracking-tighter italic">
@@ -148,10 +176,9 @@
                     </div>
                     <h3 class="text-xl font-black uppercase tracking-tight">Envíos en el día</h3>
                 </div>
-                <!-- El texto del contador se inyectará aquí vía JS -->
                 <p id="envio-moto-text" class="text-sm md:text-base text-gray-600 font-medium"></p>
             </div>
-            
+
             <div class="flex-1 w-full bg-white p-6 shadow-sm border-2 border-brand-black" id="cp-container">
                 <h4 class="text-sm font-bold mb-3 uppercase tracking-wide text-gray-500">¿Llega rápido a tu zona? (Ej: 3350)</h4>
                 <div class="flex gap-2" id="cp-form">
@@ -169,7 +196,7 @@
                 <h2 class="text-3xl md:text-4xl font-black uppercase tracking-tighter">Más Vendidos</h2>
                 <div class="h-1 w-20 bg-brand-black mt-2"></div>
             </div>
-            <a href="#" class="text-brand-gray font-bold hover:text-black underline decoration-2 underline-offset-4 text-sm md:text-base uppercase tracking-wide">Ver todo el catálogo</a>
+            <a href="#" onclick="limpiarFiltros()" class="text-brand-gray font-bold hover:text-black underline decoration-2 underline-offset-4 text-sm md:text-base uppercase tracking-wide">Ver todo el catálogo</a>
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8" id="product-grid">
@@ -212,7 +239,7 @@
                     </p>
                 </div>
             </div>
-            
+
             <div>
                 <h4 class="font-bold mb-6 uppercase text-sm tracking-widest text-gray-300">Menú</h4>
                 <ul class="space-y-3 text-sm font-medium text-gray-500">
@@ -227,7 +254,6 @@
                 <h4 class="font-bold mb-6 uppercase text-sm tracking-widest text-gray-300">Comunidad</h4>
                 <p class="text-gray-500 text-sm font-medium mb-4">Seguinos para enterarte de los próximos drops y reposiciones.</p>
                 <div class="flex space-x-4">
-                    <!-- Enlace directo a tu Instagram -->
                     <a href="https://www.instagram.com/7zona_urbana/" target="_blank" rel="noopener noreferrer" class="bg-white text-black p-3 hover:bg-gray-300 transition transform hover:scale-110 flex items-center justify-center">
                         <i class="fa-brands fa-instagram text-xl"></i>
                     </a>
@@ -246,151 +272,32 @@
         </div>
     </footer>
 
-    <script>
-        // 1. Lógica del Menú Móvil
-        function toggleMenu() {
-            const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('hidden');
-        }
+    <script src="script.js"></script>
 
-        // 2. Renderizado de Productos con Estilo Streetwear
-        const productos = [
-            { 
-                nombre: "Remera Oversize 'Street Logo' Black", 
-                precio: "$22.500", 
-                img: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=800&auto=format&fit=crop", 
-                descuento: false,
-                nuevo: true
-            },
-            { 
-                nombre: "Pantalón Cargo Wide Leg Olive", 
-                precio: "$54.000", 
-                img: "https://images.unsplash.com/photo-1624378440843-16a506798a72?q=80&w=800&auto=format&fit=crop", 
-                descuento: "15% OFF",
-                nuevo: false
-            },
-            { 
-                nombre: "Buzo Hoodie Essential Heavyweight", 
-                precio: "$48.900", 
-                img: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=800&auto=format&fit=crop", 
-                descuento: false,
-                nuevo: true
-            },
-            { 
-                nombre: "Gorra Trucker Logo Classic", 
-                precio: "$18.000", 
-                img: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=800&auto=format&fit=crop", 
-                descuento: false,
-                nuevo: false
-            }
-        ];
+    <!-- Panel Lateral del Carrito (Offcanvas) -->
+    <div id="cart-panel" class="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50 flex flex-col">
+        <!-- Encabezado -->
+        <div class="flex items-center justify-between p-4 border-b border-gray-200">
+            <h2 class="text-lg font-black uppercase tracking-tight">Mi Carrito</h2>
+            <button onclick="cerrarCarrito()" class="text-gray-500 hover:text-black transition">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
 
-        const grid = document.getElementById('product-grid');
-        productos.forEach(prod => {
-            let badges = '';
-            if (prod.descuento) badges += `<span class="bg-red-600 text-white text-[10px] uppercase tracking-widest font-bold px-3 py-1 mr-1">${prod.descuento}</span>`;
-            if (prod.nuevo) badges += `<span class="bg-brand-black text-white text-[10px] uppercase tracking-widest font-bold px-3 py-1">NUEVO</span>`;
+        <!-- Items del carrito -->
+        <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
 
-            grid.innerHTML += `
-                <div class="group relative bg-brand-light p-3 pb-5 transition-all duration-300 hover:bg-gray-200">
-                    <div class="relative w-full aspect-[4/5] bg-gray-300 overflow-hidden mb-4">
-                        <img src="${prod.img}" alt="${prod.nombre}" class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out">
-                        <div class="absolute top-3 left-3 flex">
-                            ${badges}
-                        </div>
-                        <div class="absolute bottom-0 left-0 w-full p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out flex justify-center bg-white/90 backdrop-blur-sm">
-                            <button class="text-brand-black font-black uppercase tracking-wider text-sm py-2 px-4 hover:scale-105 transition-transform w-full">
-                                + Sumar al Carrito
-                            </button>
-                        </div>
-                    </div>
-                    <div class="flex flex-col">
-                        <p class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Unisex</p>
-                        <h3 class="text-sm font-black text-brand-dark leading-tight mb-2 uppercase">${prod.nombre}</h3>
-                        <div class="flex items-center gap-3">
-                            <p class="text-lg font-black text-brand-black">${prod.precio}</p>
-                            ${prod.descuento ? '<p class="text-xs text-gray-400 line-through font-bold mt-1">$63.500</p>' : ''}
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-
-        // 3. Lógica del Contador para el widget de envíos
-        function actualizarContadorEnvio() {
-            const AHORA = new Date();
-            const MEDIO_DIA = new Date();
-            MEDIO_DIA.setHours(12, 0, 0, 0); 
-            
-            let diferenciaMilisegundos = MEDIO_DIA - AHORA;
-            if (diferenciaMilisegundos < 0) {
-                diferenciaMilisegundos += 24 * 60 * 60 * 1000;
-            }
-
-            const DIF_HORAS = Math.floor(diferenciaMilisegundos / (1000 * 60 * 60));
-            const DIF_MINUTOS = Math.floor((diferenciaMilisegundos % (1000 * 60 * 60)) / (1000 * 60));
-            const timer = `<span class="bg-black text-white px-2 py-1 mx-1 font-mono text-sm inline-block shadow-[2px_2px_0px_rgba(156,163,175,1)]">${String(DIF_HORAS).padStart(2, '0')}:${String(DIF_MINUTOS).padStart(2, '0')} hs</span>`;
-            
-            const textoEnvio = document.getElementById('envio-moto-text');
-            if (AHORA < MEDIO_DIA) {
-                textoEnvio.innerHTML = `Comprando dentro de las próximas ${timer} tu pedido se despacha <strong>HOY</strong>.`;
-            } else {
-                textoEnvio.innerHTML = `Comprá ahora y tu pedido será preparado para despachar a primera hora de <strong>MAÑANA</strong>.`;
-            }
-        }
-
-        setInterval(actualizarContadorEnvio, 1000);
-        actualizarContadorEnvio();
-
-        // 4. Verificación de Código Postal (CPs locales de ejemplo)
-        // Ejemplo: 3350 es el CP de la zona de Apóstoles/San José en Misiones.
-        const CODIGOS_POSTALES_LOCALES = [3350, 3300, 3302, 3304]; 
-
-        function verificarCP() {
-            const input = document.getElementById('cp-input').value;
-            const contenedor = document.getElementById('cp-container');
-            const cpNumero = parseInt(input);
-
-            if (!input) return;
-
-            if (CODIGOS_POSTALES_LOCALES.includes(cpNumero) || (cpNumero >= 3300 && cpNumero <= 3390)) {
-                // Éxito - Envío Local
-                contenedor.innerHTML = `
-                    <div class="border-2 border-brand-black p-4 bg-gray-50 flex items-start gap-4 animate-[fadeIn_0.3s_ease-out]">
-                        <i class="fa-solid fa-bolt text-2xl text-black mt-1"></i>
-                        <div>
-                            <p class="font-black uppercase text-lg tracking-tight">¡Llegamos volando! 🚀</p>
-                            <p class="text-sm font-medium text-gray-700 mt-1">Tu CP (${cpNumero}) califica para envío rápido por cadetería en la zona.</p>
-                        </div>
-                    </div>
-                    <button onclick="reiniciarCP()" class="text-xs font-bold text-gray-500 mt-4 uppercase hover:text-black transition flex items-center gap-1"><i class="fa-solid fa-rotate-right"></i> Probar otro CP</button>
-                `;
-            } else {
-                // Falla - Envío por Correo (No local)
-                contenedor.innerHTML = `
-                    <div class="border-2 border-gray-300 p-4 bg-white flex items-start gap-4 animate-[fadeIn_0.3s_ease-out]">
-                        <i class="fa-solid fa-box text-2xl text-gray-400 mt-1"></i>
-                        <div>
-                            <p class="font-black uppercase text-lg tracking-tight">Envío Nacional 🇦🇷</p>
-                            <p class="text-sm font-medium text-gray-600 mt-1">Para el CP ${cpNumero} hacemos envíos seguros mediante Correo Argentino (3 a 5 días hábiles).</p>
-                        </div>
-                    </div>
-                    <button onclick="reiniciarCP()" class="text-xs font-bold text-gray-500 mt-4 uppercase hover:text-black transition flex items-center gap-1"><i class="fa-solid fa-rotate-right"></i> Probar otro CP</button>
-                `;
-            }
-        }
-
-        // Función auxiliar para volver a mostrar el input
-        function reiniciarCP() {
-            const contenedor = document.getElementById('cp-container');
-            contenedor.innerHTML = `
-                <h4 class="text-sm font-bold mb-3 uppercase tracking-wide text-gray-500">¿Llega rápido a tu zona? (Ej: 3350)</h4>
-                <div class="flex gap-2" id="cp-form">
-                    <input type="number" id="cp-input" placeholder="Ingresá tu CP..." class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black font-medium transition-colors">
-                    <button onclick="verificarCP()" class="bg-brand-black text-white px-6 py-3 font-bold hover:bg-brand-gray transition whitespace-nowrap uppercase text-sm tracking-wider">Verificar</button>
-                </div>
-            `;
-        }
-    </script>
+        <!-- Footer con formulario de checkout -->
+        <div class="p-4 border-t border-gray-200">
+            <form id="checkout-form" class="space-y-3">
+                <input type="text" id="checkout-nombre" placeholder="Tu nombre" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition">
+                <input type="text" id="checkout-direccion" placeholder="Dirección / Ciudad" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition">
+                <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 px-6 uppercase tracking-wider hover:bg-green-700 transition flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-lg"></i>
+                    Hacer pedido por WhatsApp
+                </button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
